@@ -100,3 +100,96 @@ print(myeloid_outside_boundary)
 write_csv(myeloid_inside_boundary, "myeloid_inside_boundary.csv")
 write_csv(myeloid_outside_boundary, "myeloid_outside_boundary.csv")
 
+####################### NEW
+
+# Extract counts data from the Spatial.008um assay
+counts_data <- JY10[["Spatial.008um"]]@layers[["counts"]]
+
+# Assign cell names to counts_data if they are missing
+if (is.null(colnames(counts_data))) {
+  colnames(counts_data) <- Cells(JY10[["Spatial.008um"]])
+}
+
+# Verify that counts_data now has cell names
+cat("Column names in counts_data after assignment:\n")
+print(head(colnames(counts_data)))
+
+# Identify cells that match counts_data for Inside and Outside groups
+inside_cells <- intersect(myeloid_inside_boundary$cell, colnames(counts_data))
+outside_cells <- intersect(myeloid_outside_boundary$cell, colnames(counts_data))
+
+# Confirm cell counts
+cat("Number of Inside Cells:", length(inside_cells), "\n")
+cat("Number of Outside Cells:", length(outside_cells), "\n")
+
+# Subset counts_data for Inside and Outside Cells
+counts_inside <- counts_data[, inside_cells, drop = FALSE]
+counts_outside <- counts_data[, outside_cells, drop = FALSE]
+
+# Perform differential expression analysis
+de_results <- data.frame(
+  gene = rownames(counts_data),
+  avg_inside = rowMeans(counts_inside),
+  avg_outside = rowMeans(counts_outside),
+  p_value = apply(counts_data, 1, function(x) {
+    wilcox.test(x[inside_cells], x[outside_cells])$p.value
+  })
+)
+
+# Calculate log2 fold change and adjust p-values
+de_results <- de_results %>%
+  mutate(
+    log2FC = log2(avg_inside + 1) - log2(avg_outside + 1),
+    p_adj = p.adjust(p_value, method = "fdr")
+  )
+
+# Filter for significant genes
+significant_genes <- de_results %>%
+  filter(p_adj < 0.05 & abs(log2FC) > 0.5)
+
+
+
+
+
+
+################ INspect Data
+
+# View the overall structure of the Seurat object
+str(JY10)
+
+# List available assays
+Assays(JY10)
+
+# View structure of the Spatial.008um assay
+str(JY10[["Spatial.008um"]])
+
+# Check available layers within the Spatial.008um assay
+Layers(JY10[["Spatial.008um"]])
+
+# Extract and examine the counts layer
+counts_data <- JY10[["Spatial.008um"]]@layers[["counts"]]
+
+# Check dimensions
+dim(counts_data)
+
+# View row names (genes) and column names (cells) if available
+head(rownames(counts_data))
+head(colnames(counts_data))
+
+# View the first few rows of metadata
+head(JY10@meta.data)
+
+# Check structure of metadata
+str(JY10@meta.data)
+
+# List available images in JY10
+Images(JY10)
+
+# Extract spatial coordinates from a specific image, e.g., "slice1.008um"
+spatial_coords <- GetTissueCoordinates(JY10, image = "slice1.008um")
+head(spatial_coords)
+
+# List reductions available in JY10
+Reductions(JY10)
+
+
