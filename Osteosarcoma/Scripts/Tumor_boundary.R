@@ -7,7 +7,7 @@ library(dbscan)
 
 # Step 1: Load Data
 # Load the data file containing barcodes labeled as "Tumor"
-data <- read_csv("JY10_Tumor_Micro_ENV.csv")
+data <- read_csv("barcodes/JY10_Tumor_Micro_ENV.csv")
 
 # Filter for barcodes labeled as "Tumor"
 tumor_barcodes <- data %>%
@@ -35,7 +35,7 @@ initial_tumor_plot <- ggplot(tumor_spatial_data, aes(x = x, y = y)) +
   theme_minimal()
 
 # Save the initial tumor plot to a file
-ggsave("initial_tumor_plot.png", plot = initial_tumor_plot, width = 8, height = 6)
+ggsave("JY10_Tumor/initial_tumor_plot.png", plot = initial_tumor_plot, width = 8, height = 6)
 
 # Step 5: Apply DBSCAN for Boundary Refinement
 # Run DBSCAN on the tumor-labeled spatial coordinates
@@ -61,7 +61,7 @@ refined_boundary_plot <- ggplot(tumor_spatial_data, aes(x = x, y = y, color = La
   scale_color_manual(values = c("Tumor" = "red", "Non-Tumor" = "gray"))
 
 # Save the refined boundary plot to a file
-ggsave("more_refined_tumor_boundary_plot.png", plot = refined_boundary_plot, width = 8, height = 6)
+ggsave("JY10_Tumor/more_refined_tumor_boundary_plot.png", plot = refined_boundary_plot, width = 8, height = 6)
 
 # Display final refined boundary plot
 refined_boundary_plot
